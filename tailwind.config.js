@@ -2,7 +2,12 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "primary": "#4AC397",
+        "primary-hover": "#41AB84",
+      }
+    },
   },
   plugins: [],
 };
