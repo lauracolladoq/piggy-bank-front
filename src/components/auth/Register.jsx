@@ -1,34 +1,13 @@
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-export const userRegistrationSchema = z
-  .object({
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters long")
-      .max(16, "Username cannot exceed 16 characters"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
-    confirmPassword: z
-      .string()
-      .min(8, "Password must be at least 8 characters long"),
-  })
-  .superRefine(({ confirmPassword, password }, ctx) => {
-    if (confirmPassword !== password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "The passwords did not match",
-        path: ["confirmPassword"],
-      });
-    }
-  });
+import { userRegistrationSchema } from "../../schemas/userSchema";
+import { useNavigate } from "react-router-dom";
 
 export function Register() {
   const {
     register,
     handleSubmit,
-    setError,
+    // setError,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -37,15 +16,30 @@ export function Register() {
     resolver: zodResolver(userRegistrationSchema),
   });
 
+  const navigate = useNavigate();
+
   const onSubmit = async (data) => {
+    // Manda solicitud POST al servidor con datos del usuario
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      throw new Error();
-      console.log(data);
-    } catch (error) {
-      setError("root", {
-        message: "An account with this email already exists",
+      const res = await fetch("http://localhost:3000/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       });
+
+      // Si la respuesta no es válida, lanza un error
+      if (!res.ok) {
+        throw new Error("An error occurred while registering");
+      }
+
+      console.log(data);
+
+      // Redirige al usuario a la página de inicio
+      return navigate("/");
+    } catch {
+      // TODO: Mostar un mensaje de error si la solicitud falla
     }
   };
 
